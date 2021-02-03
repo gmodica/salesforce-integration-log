@@ -140,9 +140,9 @@ sfdx force:source:deploy -u [org] -p ./force-app
 
 Click on this button to deploy to your org:
 
-<a href="https://githubsfdeploy.herokuapp.com/app/githubdeploy/gmodica/salesforce-integration-log">
+<a href="https://githubsfdeploy.herokuapp.com">
   <img alt="Deploy to Salesforce"
-       src="https://raw.githubusercontent.com/afawcett/githubsfdeploy/master/src/main/webapp/resources/img/deploy.png">
+       src="https://raw.githubusercontent.com/afawcett/githubsfdeploy/master/deploy.png">
 </a>
 
 ## Bugs and Feedback
