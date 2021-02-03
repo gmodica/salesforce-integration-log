@@ -145,6 +145,30 @@ Click on this button to deploy to your org:
        src="https://raw.githubusercontent.com/afawcett/githubsfdeploy/master/deploy.png">
 </a>
 
+## Configuring the Profiles
+
+After deploy, please make sure to give profiles (commonly the System Administrator) access (Default Tab On) to the following tabs:
+
+* Integration Log Monitor
+* Integration Logs
+
+## Testing the Deploy
+
+You can smoke test the deploy by generating a couple of events and making sure those events are seen in the "Integration Log Monitor" tab. Open the Developer Console and execute the following anonymous apex code:
+
+```
+EventBus.publish(
+    new List<Integration_Log_Event__e> {
+        new Integration_Log_Event__e(Module__c = 'Module'),
+        new Integration_Log_Event__e(Module__c = 'Module', Error_Message__c = 'Error')
+    }
+);
+```
+
+## Known Issues
+
+* The Integration Log Monitor tab produces errors if the user has Lightning debug mode enabled
+
 ## Bugs and Feedback
 
 To report issues, open a [bug on GitHub](https://github.com/gmodica/salesforce-integration-log/issues/new?template=Bug_report.md). If you would like to suggest a feature, create a [feature request on GitHub](https://github.com/gmodica/salesforce-integration-log/issues/new?template=Feature_request.md).
