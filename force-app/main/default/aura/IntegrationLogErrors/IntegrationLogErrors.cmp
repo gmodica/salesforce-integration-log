@@ -1,0 +1,76 @@
+<aura:component implements="flexipage:availableForAllPageTypes" access="global">
+	<aura:attribute name="channel" type="String" default="/event/Integration_Log_Event__e" access="private"/>
+
+    <!-- Holds the streaming event subscription -->
+    <aura:attribute name="subscription" type="Map" access="private"/>
+
+	<aura:attribute name="errors" type="Object[]" default="[]" access="private"/>
+	
+	<lightning:workspaceAPI aura:id="workspace" />
+
+    <!-- Calls the onInit controller function on component initalization -->
+    <aura:handler name="init" value="{!this}" action="{!c.onInit}"/>
+	<aura:handler event="lightning:tabClosed" action="{!c.onTabClosed}"/>
+
+    <!-- EMP API component -->
+    <lightning:empApi aura:id="empApi" />
+
+    <lightning:card footer="Monitor" title="Integration Log Errors" iconName="custom:custom34">
+        <aura:set attribute="actions">
+            <lightning:button label="Clear" iconName="utility:delete" onclick="{!c.onDelete}"/>
+        </aura:set>
+        <p class="slds-p-horizontal_small">
+            <ul class="slds-timeline">
+                <aura:iteration items="{!v.errors}" var="error">
+                    <li>
+                        <div class="{!'slds-timeline__item_expandable slds-timeline__item_event' + (error.expanded ? ' slds-is-open' : '')}">
+                            <span class="slds-assistive-text">{!error.Error_Message__c}</span>
+                            <div class="slds-media">
+                                <div class="slds-media__figure">
+                                    <button class="slds-button slds-button_icon" title="Expandir/ocultar detalles" aria-controls="event-item-expanded" aria-expanded="{!v.expanded?'true':'false'}" onclick="{!c.onToggleExpand}" data-id="{!error.Id}">
+                                        <lightning:icon iconName="{!error.expanded ? 'utility:chevrondown' : 'utility:chevronright'}" size="xx-small" alternativeText="switch"/>
+                                        <span class="slds-assistive-text">Expandir/ocultar detalles</span>
+                                    </button>
+                                    <div class="slds-icon_container slds-icon-standard-event slds-timeline__icon" title="{!error.Module__c}">
+                                        <lightning:icon iconName="standard:event" size="small" />
+                                    </div>
+                                </div>
+                                <div class="slds-media__body">
+                                    <div class="slds-grid slds-grid_align-spread slds-timeline__trigger">
+                                        <div class="slds-grid slds-grid_vertical-align-center slds-truncate_container_75 slds-no-space">
+                                            <h3 class="slds-truncate" title="{!error.Error_Message__c}">
+                                                <strong>{!error.Module__c}: {!error.Error_Message__c}</strong>
+                                            </h3>
+                                        </div>
+                                        <div class="slds-timeline__actions slds-timeline__actions_inline">
+                                            <p class="slds-timeline__date"><lightning:formattedDateTime value="{!error.CreatedDate}" year="numeric" month="2-digit" day="2-digit" hour="2-digit" minute="2-digit" hour12="false"/></p>
+                                        </div>
+                                    </div>
+                                    
+                                    <aura:if isTrue="{!error.expanded}">
+                                        <article class="slds-box slds-timeline__item_details slds-theme_shade slds-m-top_x-small slds-m-horizontal_xx-small slds-p-around_medium" id="event-item-expanded" aria-hidden="false">                                            
+                                            <strong>Direction</strong>
+                                            <pre>{!error.Direction__c}</pre>
+                                            <strong>Endpoint</strong>
+                                            <pre>{!error.Endpoint__c}</pre>
+                                            <strong>Method</strong>
+                                            <pre>{!error.Method__c}</pre>
+                                            <strong>Request</strong>
+                                            <pre>{!error.Request_Body__c}</pre>
+                                            <strong>Response</strong>
+                                            <pre>{!error.Response_Body__c}</pre>
+                                            <strong>Status Code</strong>
+                                            <pre>{!error.Response_StatusCode__c}</pre>
+                                            <strong>Error</strong>
+                                            <pre>{!error.Error_Message__c}</pre>
+                                        </article>
+                                    </aura:if>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                </aura:iteration>
+            </ul>
+        </p>
+    </lightning:card>
+</aura:component>

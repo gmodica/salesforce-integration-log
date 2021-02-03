@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Flow xmlns="http://soap.sforce.com/2006/04/metadata">
+    <actionCalls>
+        <name>Execute_Integration</name>
+        <label>Execute Integration</label>
+        <locationX>620</locationX>
+        <locationY>259</locationY>
+        <actionName>IntegrationLogUtility</actionName>
+        <actionType>apex</actionType>
+        <connector>
+            <targetReference>Retry_Final_Screen</targetReference>
+        </connector>
+        <inputParameters>
+            <name>recordId</name>
+            <value>
+                <elementReference>recordId</elementReference>
+            </value>
+        </inputParameters>
+    </actionCalls>
+    <apiVersion>50.0</apiVersion>
+    <interviewLabel>Retry Integration {!$Flow.CurrentDateTime}</interviewLabel>
+    <label>Retry Integration</label>
+    <processMetadataValues>
+        <name>BuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>CanvasMode</name>
+        <value>
+            <stringValue>FREE_FORM_CANVAS</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>OriginBuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processType>Flow</processType>
+    <screens>
+        <name>Retry_Attempt_Message</name>
+        <label>Retry Attempt</label>
+        <locationX>252</locationX>
+        <locationY>256</locationY>
+        <allowBack>false</allowBack>
+        <allowFinish>true</allowFinish>
+        <allowPause>false</allowPause>
+        <connector>
+            <targetReference>Execute_Integration</targetReference>
+        </connector>
+        <fields>
+            <name>Retry_Message</name>
+            <fieldText>&lt;p&gt;Are you sure you want to execute this integration request again?&lt;/p&gt;</fieldText>
+            <fieldType>DisplayText</fieldType>
+        </fields>
+        <showFooter>true</showFooter>
+        <showHeader>false</showHeader>
+    </screens>
+    <screens>
+        <name>Retry_Final_Screen</name>
+        <label>Retry Final Screen</label>
+        <locationX>873</locationX>
+        <locationY>259</locationY>
+        <allowBack>false</allowBack>
+        <allowFinish>true</allowFinish>
+        <allowPause>false</allowPause>
+        <fields>
+            <name>Retry_Final_Message</name>
+            <fieldText>&lt;p&gt;Integration executed, a new integration log will be created &lt;span style=&quot;background-color: rgb(255, 255, 255); color: rgb(62, 62, 60);&quot;&gt;shortly&lt;/span&gt;.&lt;/p&gt;</fieldText>
+            <fieldType>DisplayText</fieldType>
+        </fields>
+        <showFooter>true</showFooter>
+        <showHeader>false</showHeader>
+    </screens>
+    <start>
+        <locationX>50</locationX>
+        <locationY>50</locationY>
+        <connector>
+            <targetReference>Retry_Attempt_Message</targetReference>
+        </connector>
+    </start>
+    <status>Draft</status>
+    <variables>
+        <name>recordId</name>
+        <dataType>String</dataType>
+        <isCollection>false</isCollection>
+        <isInput>true</isInput>
+        <isOutput>false</isOutput>
+    </variables>
+</Flow>

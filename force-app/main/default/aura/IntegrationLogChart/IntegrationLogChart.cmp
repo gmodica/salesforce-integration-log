@@ -1,0 +1,30 @@
+<aura:component implements="flexipage:availableForAllPageTypes" access="global" >
+    <aura:attribute name="channel" type="String" default="/event/Integration_Log_Event__e" access="private"/>
+
+    <!-- Holds the streaming event subscription -->
+    <aura:attribute name="subscription" type="Map" access="private"/>
+
+    <!-- Chart attributes -->
+    <aura:attribute name="events" type="Map" default="{}" access="private"/>
+
+    <ltng:require scripts="{!join(',',$Resource.ChartJSwithStreaming + '/moment.min.js',$Resource.ChartJSwithStreaming + '/chart.js',$Resource.ChartJSwithStreaming + '/chartjs-plugin-streaming.js')}" afterScriptsLoaded="{!c.onScriptsLoaded}" />
+
+    <!-- Calls the onInit controller function on component initalization -->
+    <aura:handler name="init" value="{!this}" action="{!c.onInit}"/>
+	<aura:handler event="lightning:tabClosed" action="{! c.onTabClosed }"/>
+
+    <!-- EMP API component -->
+    <lightning:empApi aura:id="empApi" />
+
+    <lightning:card footer="Monitor" title="Integration Log Chart" iconName="custom:custom102">
+        <aura:set attribute="actions">
+            <!--<lightning:button label="New"/>-->
+        </aura:set>
+        <p class="slds-p-horizontal_small">
+            <div>
+                <canvas id="chart" height="100"></canvas>
+            </div>
+        </p>
+    </lightning:card>
+
+</aura:component>

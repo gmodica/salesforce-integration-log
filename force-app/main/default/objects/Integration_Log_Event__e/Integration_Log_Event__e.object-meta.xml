@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomObject xmlns="http://soap.sforce.com/2006/04/metadata">
+    <deploymentStatus>Deployed</deploymentStatus>
+    <eventType>HighVolume</eventType>
+    <label>Integration Log Event</label>
+    <pluralLabel>Integration Log Events</pluralLabel>
+    <publishBehavior>PublishImmediately</publishBehavior>
+</CustomObject>
