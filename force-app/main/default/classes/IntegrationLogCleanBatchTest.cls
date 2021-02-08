@@ -8,7 +8,7 @@ private class IntegrationLogCleanBatchTest {
         );
 
         insert intlog;
-
+		Test.setCreatedDate(intLog.Id, DateTime.now().addDays(-11));
     }
 
     @isTest
