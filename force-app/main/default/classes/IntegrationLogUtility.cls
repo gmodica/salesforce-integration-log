@@ -81,7 +81,7 @@ public class IntegrationLogUtility {
         for(Integration_Log_Event__e event : e){
             event.End_Time__c = Datetime.now();
             event.Duration__c = event.Start_Time__c != null ? event.End_Time__c.getTime() - event.Start_Time__c.getTime() : null;
-		}
+        }
         EventBus.publish(e);
     }
 
@@ -146,11 +146,7 @@ public class IntegrationLogUtility {
         List<Integration_Log__c> integrationLogs = new List<Integration_Log__c>();
 
         for(Integration_Log_Event__e e : integrationLogEvents) {
-            String module = String.isBlank(e.Module__c) ? '*' : e.Module__c;
-            Integration_Log_Setting__mdt setting = moduleToSettings.get(module);
-            if(setting == null) {
-                setting = moduleToSettings.get('*');
-            }
+            Integration_Log_Setting__mdt setting = findSetting(moduleToSettings, e.Module__c);
             if(setting == null) continue;
 
             if(String.isBlank(e.Error_Message__c) && !setting.Log_Success__c) continue;
@@ -163,6 +159,44 @@ public class IntegrationLogUtility {
             insert integrationLogs;
         }
     }
+
+	public static Integration_Log_Setting__mdt findSetting(Map<String,Integration_Log_Setting__mdt> moduleToSettings, String module) {
+		if(String.isBlank(module)) {
+			Integration_Log_Setting__mdt setting = moduleToSettings.get('*');
+			if(setting != null) return setting;
+		}
+		else if(String.isNotBlank(module)) {
+			Integration_Log_Setting__mdt moduleSetting = moduleToSettings.get(module);
+			if(moduleSetting != null) return moduleSetting;
+
+			String settingModule = '';
+			for(Integration_Log_Setting__mdt setting : moduleToSettings.values()) {
+				if(String.isBlank(setting.Module__c)) continue;
+				String regex = setting.Module__c.replace(':*','.*');
+
+				Pattern myPattern = Pattern.compile(regex);
+				Matcher myMatcher = myPattern.matcher(module);
+				if(myMatcher.matches() && setting.Module__c.length() > settingModule.length()) {
+					moduleSetting = setting;
+					settingModule = setting.Module__c;
+				}
+			}
+			if(moduleSetting != null) return moduleSetting;
+
+			settingModule = '';
+			for(Integration_Log_Setting__mdt setting : moduleToSettings.values()) {
+				if(String.isBlank(setting.Module__c)) continue;
+
+				if(setting.Module__c.replace(':*','').replace('*','').equalsIgnoreCase(module) && setting.Module__c.length() > settingModule.length()) {
+					moduleSetting = setting;
+					settingModule = setting.Module__c;
+				}
+			}
+			if(moduleSetting != null) return moduleSetting;
+		}
+
+		return moduleToSettings.get('*');
+	}
 
     private static Integration_Log__c convertLog(Integration_Log_Event__e eventLog) {
         return new Integration_Log__c(
@@ -180,7 +214,7 @@ public class IntegrationLogUtility {
             Origin_Data__c = eventLog.Origin_Data__c,
             End_Time__c = eventLog.End_Time__c,
             Start_Time__c = eventLog.Start_Time__c,
-			Duration__c = eventLog.Duration__c,
+            Duration__c = eventLog.Duration__c,
 			Account__c = eventLog.Account_Id__c
         );
     }
@@ -208,15 +242,30 @@ public class IntegrationLogUtility {
 
             modules.add(setting.Module__c);
 
-            String currentCondition = '(Module__c = \'' + setting.Module__c + '\' AND ';
-            currentCondition += 'CreatedDate < ' + soqlDate;
+            String currentCondition = '(';
+			if(setting.Module__c.endsWith(':*'))
+				currentCondition += 'Module__c like \'' + setting.Module__c.replace(':*','') + '%\'';
+			else
+				currentCondition += 'Module__c = \'' + setting.Module__c + '\'';
+            currentCondition += ' AND CreatedDate < ' + soqlDate;
             currentCondition += ') OR ';
 
             whereCondition += currentCondition;
         }
 
         if(soqlDateForGeneral != null) {
-            String currentCondition = '(Module__c not in (\'' + String.join(modules,'\',\'') + '\') AND ';
+            String currentCondition = '(';
+			if(!modules.isEmpty()) {
+				currentCondition += '(';
+				List<String> clauses = new List<String>();
+				for(String module : modules) {
+					if(module.endsWith(':*'))
+						clauses.add('(NOT Module__c LIKE \'' + module.replace(':*', '') + '%\')');
+					else
+						clauses.add('Module__c != \'' + module + '\'');
+				}
+				currentCondition += String.join(clauses,' AND ') + ') AND ';
+			}
             currentCondition += 'CreatedDate < ' + soqlDateForGeneral;
             currentCondition += ') OR ';
 
@@ -261,7 +310,7 @@ public class IntegrationLogUtility {
     }
 
     private static List<Integration_Log_Setting__mdt> selectSettingsForExpirations() {
-        
+
         return Test.isRunningTest()? [select Id,Expiration_Days__c,Module__c from Integration_Log_Setting__mdt] : [
             select
                 Id,
