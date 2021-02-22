@@ -94,6 +94,11 @@ public class IntegrationLogUtility {
     public static void publishLog(Integration_Log_Event__e e, Boolean differ) {
         e.End_Time__c = Datetime.now();
         e.Duration__c = e.Start_Time__c != null ? e.End_Time__c.getTime() - e.Start_Time__c.getTime() : null;
+		if(e.Endpoint__c != null && e.Endpoint__c.length() > 255) e.Endpoint__c = e.Endpoint__c.substring(0,255);
+        if(e.Request_Body__c != null && e.Request_Body__c.length() > 131072) e.Request_Body__c = e.Request_Body__c.substring(0,131072);
+        if(e.Response_Body__c != null && e.Response_Body__c.length() > 131072) e.Response_Body__c = e.Response_Body__c.substring(0,131072);
+        if(e.Error_Message__c != null && e.Error_Message__c.length() > 131072) e.Error_Message__c = e.Error_Message__c.substring(0,131072);
+        if(e.Origin_Data__c != null && e.Origin_Data__c.length() > 131072) e.Origin_Data__c = e.Origin_Data__c.substring(0,131072);
         if(differ) {
             logs.add(e);
         }
