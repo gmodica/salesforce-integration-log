@@ -23,6 +23,14 @@
                 <behavior>Readonly</behavior>
                 <field>Successful__c</field>
             </layoutItems>
+            <layoutItems>
+                <behavior>Readonly</behavior>
+                <field>Parent_Integration_Log__c</field>
+            </layoutItems>
+            <layoutItems>
+                <behavior>Edit</behavior>
+                <field>Retry_Number__c</field>
+            </layoutItems>
         </layoutColumns>
         <layoutColumns>
             <layoutItems>
@@ -121,12 +129,6 @@
         <detailHeading>true</detailHeading>
         <editHeading>true</editHeading>
         <label>Links</label>
-        <layoutColumns>
-            <layoutItems>
-                <behavior>Readonly</behavior>
-                <field>Account__c</field>
-            </layoutItems>
-        </layoutColumns>
         <style>TwoColumnsLeftToRight</style>
     </layoutSections>
     <layoutSections>
@@ -137,13 +139,21 @@
         <layoutColumns>
             <layoutItems>
                 <behavior>Readonly</behavior>
-                <field>CreatedById</field>
+                <field>Request_Id__c</field>
+            </layoutItems>
+            <layoutItems>
+                <behavior>Readonly</behavior>
+                <field>Quiddity__c</field>
             </layoutItems>
         </layoutColumns>
         <layoutColumns>
             <layoutItems>
                 <behavior>Readonly</behavior>
                 <field>LastModifiedById</field>
+            </layoutItems>
+            <layoutItems>
+                <behavior>Readonly</behavior>
+                <field>CreatedById</field>
             </layoutItems>
         </layoutColumns>
         <style>TwoColumnsTopToBottom</style>
@@ -159,8 +169,8 @@
         <style>CustomLinks</style>
     </layoutSections>
     <platformActionList>
-		<actionListContext>Record</actionListContext>
-        <platformActionListItems>
+        <actionListContext>Record</actionListContext>
+		<platformActionListItems>
             <actionName>Integration_Log__c.Retry_Integration_log</actionName>
             <actionType>QuickAction</actionType>
             <sortOrder>0</sortOrder>
@@ -196,6 +206,17 @@
             <sortOrder>18</sortOrder>
         </platformActionListItems>
     </platformActionList>
+    <relatedLists>
+        <fields>NAME</fields>
+        <fields>Module__c</fields>
+        <fields>Method__c</fields>
+        <fields>Endpoint__c</fields>
+        <fields>Successful__c</fields>
+        <fields>CREATED_DATE</fields>
+        <relatedList>Integration_Log__c.Parent_Integration_Log__c</relatedList>
+        <sortField>CREATED_DATE</sortField>
+        <sortOrder>Asc</sortOrder>
+    </relatedLists>
     <showEmailCheckbox>false</showEmailCheckbox>
     <showHighlightsPanel>false</showHighlightsPanel>
     <showInteractionLogPanel>false</showInteractionLogPanel>

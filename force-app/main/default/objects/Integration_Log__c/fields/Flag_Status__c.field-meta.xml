@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Flag_Status__c</fullName>
+    <externalId>false</externalId>
+    <formula>if( Successful__c, IMAGE(&quot;https://login.salesforce.com/logos/Standard/task/logo.svg&quot;, &quot;OK&quot;, 60,60),IMAGE(&quot;https://login.salesforce.com/logos/Custom/Flag_Red/logo.png&quot;, &quot;Error&quot;,60,60))</formula>
+    <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+    <label>Status</label>
+    <required>false</required>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Text</type>
+    <unique>false</unique>
+</CustomField>

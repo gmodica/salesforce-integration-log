@@ -60,19 +60,23 @@ public class IntegrationLogUtility {
     }
 
     public static void includeRestContext(Integration_Log_Event__e e) {
-        e.Endpoint__c = RestContext.request.requestURI;
-        e.Method__c = RestContext.request.httpMethod;
-        e.Request_Body__c = RestContext.request.requestBody != null ? RestContext.request.requestBody.toString().left(131072) : null;
-		if(RestContext.request.headers != null) {
-			e.Request_Agent__c = RestContext.request.headers.get('User-Agent');
-			String headers = '';
-			for(String headerKey : RestContext.request.headers.keySet()) {
-				headers += headerKey + ' = ' + RestContext.request.headers.get(headerKey) + '\r\n';
+		if(RestContext.request != null) {
+			e.Endpoint__c = RestContext.request.requestURI;
+			e.Method__c = RestContext.request.httpMethod;
+			e.Request_Body__c = RestContext.request.requestBody != null ? RestContext.request.requestBody.toString().left(131072) : null;
+			if(RestContext.request.headers != null) {
+				e.Request_Agent__c = RestContext.request.headers.get('User-Agent');
+				String headers = '';
+				for(String headerKey : RestContext.request.headers.keySet()) {
+					headers += headerKey + ' = ' + RestContext.request.headers.get(headerKey) + '\r\n';
+				}
+				e.Request_Headers__c = headers;
 			}
-			e.Request_Headers__c = headers;
 		}
-        e.Response_StatusCode__c = String.valueOf(RestContext.response.statusCode);
-        e.Response_Body__c = RestContext.response.responseBody != null ? RestContext.response.responseBody.toString().left(131072) : null;
+		if(RestContext.response != null) {
+			e.Response_StatusCode__c = String.valueOf(RestContext.response.statusCode);
+			e.Response_Body__c = RestContext.response.responseBody != null ? RestContext.response.responseBody.toString().left(131072) : null;
+		}
     }
 
     private static List<Integration_Log_Event__e> logs = new List<Integration_Log_Event__e>();
@@ -92,9 +96,14 @@ public class IntegrationLogUtility {
     }
 
     public static void publishLog(Integration_Log_Event__e e, Boolean differ) {
+		if(String.isBlank(e.Request_Id__c)) e.Request_Id__c = System.Request.getCurrent().getRequestId();
+		if(String.isBlank(e.Quiddity__c)) e.Quiddity__c = String.valueOf(System.Request.getCurrent().getQuiddity());
         e.End_Time__c = Datetime.now();
         e.Duration__c = e.Start_Time__c != null ? e.End_Time__c.getTime() - e.Start_Time__c.getTime() : null;
-		if(e.Endpoint__c != null && e.Endpoint__c.length() > 255) e.Endpoint__c = e.Endpoint__c.substring(0,255);
+        if(e.Endpoint__c != null && e.Endpoint__c.length() > 255) {
+			e.Request_Body__c = e.Endpoint__c + (e.Request_Body__c == null ? '' : ('\r\n\r\n' + e.Request_Body__c));
+			e.Endpoint__c = e.Endpoint__c.substring(0,255);
+		}
         if(e.Request_Body__c != null && e.Request_Body__c.length() > 131072) e.Request_Body__c = e.Request_Body__c.substring(0,131072);
         if(e.Response_Body__c != null && e.Response_Body__c.length() > 131072) e.Response_Body__c = e.Response_Body__c.substring(0,131072);
         if(e.Error_Message__c != null && e.Error_Message__c.length() > 131072) e.Error_Message__c = e.Error_Message__c.substring(0,131072);
@@ -126,7 +135,7 @@ public class IntegrationLogUtility {
         EventBus.publish(e);
     }
 
-    @InvocableMethod(label='Retry Integration Log' description='Retry Integration Log')
+    @InvocableMethod(label='Retry Integration' description='Retry Integration')
     public static void retryIntegration(List<String> recordId) {
 
             List<Integration_Log__c> integration = [SELECT Origin_Data__c
@@ -150,13 +159,32 @@ public class IntegrationLogUtility {
 
         List<Integration_Log__c> integrationLogs = new List<Integration_Log__c>();
 
+		Map<String,Id> requestIdToIntegrationLogId = new Map<String,Id>();
+		Set<String> requestIds = new Set<String>();
+		for(Integration_Log_Event__e e : integrationLogEvents) {
+			if(String.isNotBlank(e.Parent_Request_Id__c)) requestIds.add(e.Parent_Request_Id__c);
+		}
+		if(!requestIds.isEmpty()) {
+			List<Integration_Log__c> logs = [select Id,Request_Id__c from Integration_Log__c where Request_Id__c in :requestIds];
+			for(Integration_Log__c log : logs) {
+				requestIdToIntegrationLogId.put(log.Request_Id__c, log.Id);
+			}
+		}
+
         for(Integration_Log_Event__e e : integrationLogEvents) {
-            Integration_Log_Setting__mdt setting = findSetting(moduleToSettings, e.Module__c);
+            String module = String.isBlank(e.Module__c) ? '*' : e.Module__c;
+            Integration_Log_Setting__mdt setting = moduleToSettings.get(module);
+            if(setting == null) {
+                setting = moduleToSettings.get('*');
+            }
             if(setting == null) continue;
 
             if(String.isBlank(e.Error_Message__c) && !setting.Log_Success__c) continue;
 
-            Integration_Log__c log = convertLog(e);
+			Id parentLogId = null;
+			if(String.isNotBlank(e.Parent_Request_Id__c)) parentLogId = requestIdToIntegrationLogId.get(e.Parent_Request_Id__c);
+
+            Integration_Log__c log = convertLog(e, parentLogId);
             integrationLogs.add(log);
         }
 
@@ -165,45 +193,7 @@ public class IntegrationLogUtility {
         }
     }
 
-	public static Integration_Log_Setting__mdt findSetting(Map<String,Integration_Log_Setting__mdt> moduleToSettings, String module) {
-		if(String.isBlank(module)) {
-			Integration_Log_Setting__mdt setting = moduleToSettings.get('*');
-			if(setting != null) return setting;
-		}
-		else if(String.isNotBlank(module)) {
-			Integration_Log_Setting__mdt moduleSetting = moduleToSettings.get(module);
-			if(moduleSetting != null) return moduleSetting;
-
-			String settingModule = '';
-			for(Integration_Log_Setting__mdt setting : moduleToSettings.values()) {
-				if(String.isBlank(setting.Module__c)) continue;
-				String regex = setting.Module__c.replace(':*','.*');
-
-				Pattern myPattern = Pattern.compile(regex);
-				Matcher myMatcher = myPattern.matcher(module);
-				if(myMatcher.matches() && setting.Module__c.length() > settingModule.length()) {
-					moduleSetting = setting;
-					settingModule = setting.Module__c;
-				}
-			}
-			if(moduleSetting != null) return moduleSetting;
-
-			settingModule = '';
-			for(Integration_Log_Setting__mdt setting : moduleToSettings.values()) {
-				if(String.isBlank(setting.Module__c)) continue;
-
-				if(setting.Module__c.replace(':*','').replace('*','').equalsIgnoreCase(module) && setting.Module__c.length() > settingModule.length()) {
-					moduleSetting = setting;
-					settingModule = setting.Module__c;
-				}
-			}
-			if(moduleSetting != null) return moduleSetting;
-		}
-
-		return moduleToSettings.get('*');
-	}
-
-    private static Integration_Log__c convertLog(Integration_Log_Event__e eventLog) {
+    private static Integration_Log__c convertLog(Integration_Log_Event__e eventLog, Id parentLogId) {
         return new Integration_Log__c(
             Module__c = eventLog.Module__c,
             Endpoint__c = eventLog.Endpoint__c,
@@ -220,7 +210,10 @@ public class IntegrationLogUtility {
             End_Time__c = eventLog.End_Time__c,
             Start_Time__c = eventLog.Start_Time__c,
             Duration__c = eventLog.Duration__c,
-			Account__c = eventLog.Account_Id__c
+			Request_Id__c = eventLog.Request_Id__c,
+			Quiddity__c = eventLog.Quiddity__c,
+			Retry_Number__c = eventLog.Retry_Number__c,
+			Parent_Integration_Log__c = parentLogId
         );
     }
 
@@ -247,30 +240,15 @@ public class IntegrationLogUtility {
 
             modules.add(setting.Module__c);
 
-            String currentCondition = '(';
-			if(setting.Module__c.endsWith(':*'))
-				currentCondition += 'Module__c like \'' + setting.Module__c.replace(':*','') + '%\'';
-			else
-				currentCondition += 'Module__c = \'' + setting.Module__c + '\'';
-            currentCondition += ' AND CreatedDate < ' + soqlDate;
+            String currentCondition = '(Module__c = \'' + setting.Module__c + '\' AND ';
+            currentCondition += 'CreatedDate < ' + soqlDate;
             currentCondition += ') OR ';
 
             whereCondition += currentCondition;
         }
 
         if(soqlDateForGeneral != null) {
-            String currentCondition = '(';
-			if(!modules.isEmpty()) {
-				currentCondition += '(';
-				List<String> clauses = new List<String>();
-				for(String module : modules) {
-					if(module.endsWith(':*'))
-						clauses.add('(NOT Module__c LIKE \'' + module.replace(':*', '') + '%\')');
-					else
-						clauses.add('Module__c != \'' + module + '\'');
-				}
-				currentCondition += String.join(clauses,' AND ') + ') AND ';
-			}
+            String currentCondition = '(Module__c not in (\'' + String.join(modules,'\',\'') + '\') AND ';
             currentCondition += 'CreatedDate < ' + soqlDateForGeneral;
             currentCondition += ') OR ';
 
@@ -315,7 +293,7 @@ public class IntegrationLogUtility {
     }
 
     private static List<Integration_Log_Setting__mdt> selectSettingsForExpirations() {
-
+        
         return Test.isRunningTest()? [select Id,Expiration_Days__c,Module__c from Integration_Log_Setting__mdt] : [
             select
                 Id,

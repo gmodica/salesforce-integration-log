@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Module_High_Level__c</fullName>
+    <externalId>false</externalId>
+    <formula>IF(CONTAINS(TEXT(Module__c),&quot;:&quot;), MID(TEXT(Module__c),0,FIND(&quot;:&quot;, TEXT(Module__c)) - 1), TEXT(Module__c))</formula>
+    <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+    <label>Module</label>
+    <required>false</required>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Text</type>
+    <unique>false</unique>
+</CustomField>
