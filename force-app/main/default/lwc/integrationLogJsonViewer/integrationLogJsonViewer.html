@@ -1,0 +1,22 @@
+<template>
+	<lightning-card title={label.requestBody} icon-name="standard:code_playground">
+		<template if:true={isLoading}>
+			<lightning-spinner alternative-text={label.loading} size="small" variant="brand"></lightning-spinner>
+		</template>
+		<template if:false={isLoading}>
+			<div class="slds-p-around_small">
+				<pre>{requestBody}</pre>
+			</div>
+		</template>
+	</lightning-card>
+	<lightning-card title={label.responseBody} icon-name="standard:code_playground">
+		<template if:true={isLoading}>
+			<lightning-spinner alternative-text={label.loading} size="small" variant="brand"></lightning-spinner>
+		</template>
+		<template if:false={isLoading}>
+			<div class="slds-p-around_small">
+				<pre>{responseBody}</pre>
+			</div>
+		</template>
+	</lightning-card>
+</template>

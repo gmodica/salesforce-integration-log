@@ -1,0 +1,52 @@
+<template>
+    <lightning-card title={label.cardTitle} icon-name="custom:custom34">
+		<lightning-button slot="actions" icon-name="utility:delete" title={label.clear} label={label.clear} onclick={clear}></lightning-button>
+		<div class="slds-p-around_small">
+			<ul class="slds-timeline">
+				<template for:each={errors} for:item="error">
+					<li key={error.Id}>
+						<div class="slds-timeline__item_expandable slds-timeline__item_event" data-id={error.Id}>
+							<span class="slds-assistive-text">{error.Error_Message__c}</span>
+							<div class="slds-media">
+								<div class="slds-media__figure">
+									<lightning-button-icon icon-name="utility:chevronright" title={label.toggleDetails} variant="bare" size="small" onclick={toggleDetails} data-id={error.Id}></lightning-button-icon>
+									<div class="slds-icon_container slds-icon-standard-event slds-timeline__icon" title={error.Module__c}>
+										<lightning-icon icon-name="standard:event" size="small"></lightning-icon>
+									</div>
+								</div>
+								<div class="slds-media__body">
+									<div class="slds-grid slds-grid_align-spread slds-timeline__trigger">
+										<div class="slds-grid slds-grid_vertical-align-center slds-truncate_container_75 slds-no-space">
+											<h3 class="slds-truncate" title={error.Error_Message__c}>
+												<strong>{error.Module__c}: {error.Error_Message__c}</strong>
+											</h3>
+										</div>
+										<div class="slds-timeline__actions slds-timeline__actions_inline">
+											<p class="slds-timeline__date"><lightning-formatted-date-time value={error.CreatedDate} year="numeric" month="2-digit" day="2-digit" hour="2-digit" minute="2-digit" hour12="false"></lightning-formatted-date-time></p>
+										</div>
+									</div>
+									<article class="slds-box slds-timeline__item_details slds-theme_shade slds-m-top_x-small slds-m-horizontal_xx-small slds-p-around_medium" aria-hidden="false">                                            
+										<strong>Direction</strong>
+										<pre>{error.Direction__c}</pre>
+										<strong>Endpoint</strong>
+										<pre>{error.Endpoint__c}</pre>
+										<strong>Method</strong>
+										<pre>{error.Method__c}</pre>
+										<strong>Request</strong>
+										<pre>{error.Request_Body__c}</pre>
+										<strong>Response</strong>
+										<pre>{error.Response_Body__c}</pre>
+										<strong>Status Code</strong>
+										<pre>{error.Response_StatusCode__c}</pre>
+										<strong>Error</strong>
+										<pre>{error.Error_Message__c}</pre>
+									</article>
+								</div>
+							</div>
+						</div>
+					</li>
+				</template>
+			</ul>
+		</div>
+	</lightning-card>
+</template>

@@ -1,0 +1,10 @@
+<template>
+    <lightning-card title={label.cardTitle} icon-name="custom:custom97">
+		<lightning-button slot="actions" icon-name="utility:delete" title={label.clear} label={label.clear} onclick={clear}></lightning-button>
+		<div class="slds-p-around_small">
+			<div>
+                <canvas id="chart" height="110"></canvas>
+            </div>
+		</div>
+	</lightning-card>
+</template>

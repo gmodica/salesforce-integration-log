@@ -7,7 +7,7 @@
     <flexiPageRegions>
         <itemInstances>
             <componentInstance>
-                <componentName>IntegrationLogChart</componentName>
+                <componentName>integrationLogRealtimeChart</componentName>
             </componentInstance>
         </itemInstances>
         <name>region2</name>
@@ -16,12 +16,12 @@
     <flexiPageRegions>
         <itemInstances>
             <componentInstance>
-                <componentName>IntegrationLogStats</componentName>
+                <componentName>integrationLogStatisticsChart</componentName>
             </componentInstance>
         </itemInstances>
         <itemInstances>
             <componentInstance>
-                <componentName>IntegrationLogErrors</componentName>
+                <componentName>integrationLogErrorsChart</componentName>
             </componentInstance>
         </itemInstances>
         <name>region3</name>
